@@ -1,0 +1,107 @@
+@model GardenKeeper.Application.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-0">🌱 Garden Dashboard</h1>
+        <p class="text-muted mb-0">Season @Model.Season</p>
+    </div>
+    <div>
+        <a asp-controller="Beds" asp-action="Create" class="btn btn-success me-2">+ New Bed</a>
+        <a asp-controller="Log" asp-action="Create" class="btn btn-outline-success">+ Log Entry</a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Garden Beds Summary -->
+    <div class="col-md-8">
+        <h4 class="mb-3">My Garden Beds</h4>
+        @if (!Model.BedSummaries.Any())
+        {
+            <div class="card border-dashed text-center py-5">
+                <div class="card-body">
+                    <p class="text-muted mb-3">You don't have any garden beds yet.</p>
+                    <a asp-controller="Beds" asp-action="Create" class="btn btn-success">Create Your First Bed</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                @foreach (var bed in Model.BedSummaries)
+                {
+                    <div class="col">
+                        <div class="card h-100 border-success-subtle">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a asp-controller="Beds" asp-action="Detail" asp-route-id="@bed.Id" class="text-decoration-none text-success-emphasis">
+                                        @bed.Name
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted mb-1">@bed.WidthFeet ft &times; @bed.LengthFeet ft</p>
+                                <p class="card-text">
+                                    <span class="badge bg-success">@bed.PlantCount plant(s)</span>
+                                    <span class="badge bg-secondary">@bed.Season</span>
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <a asp-controller="Beds" asp-action="Detail" asp-route-id="@bed.Id" class="btn btn-sm btn-outline-success">
+                                    View Planner
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-md-4">
+        <h4 class="mb-3">Recent Activity</h4>
+        @if (!Model.RecentEntries.Any())
+        {
+            <p class="text-muted">No log entries yet. Start by adding a planting record!</p>
+        }
+        else
+        {
+            <div class="list-group">
+                @foreach (var entry in Model.RecentEntries)
+                {
+                    <div class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <span class="badge @GetEntryTypeBadge(entry.Entry.EntryType) me-1">
+                                    @entry.Entry.EntryType
+                                </span>
+                                @(entry.PlantName ?? "General")
+                            </h6>
+                            <small class="text-muted">@entry.Entry.EntryDate.ToString("MMM d")</small>
+                        </div>
+                        <small class="text-muted">@entry.BedName</small>
+                        @if (!string.IsNullOrEmpty(entry.Entry.Notes))
+                        {
+                            <p class="mb-1 small text-truncate">@entry.Entry.Notes</p>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="mt-2">
+                <a asp-controller="Log" asp-action="Index" class="btn btn-sm btn-outline-secondary">View All Logs</a>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    string GetEntryTypeBadge(GardenKeeper.Domain.Enums.LogEntryType type) => type switch
+    {
+        GardenKeeper.Domain.Enums.LogEntryType.Planting  => "bg-success",
+        GardenKeeper.Domain.Enums.LogEntryType.Harvest   => "bg-warning text-dark",
+        GardenKeeper.Domain.Enums.LogEntryType.Watering  => "bg-info text-dark",
+        GardenKeeper.Domain.Enums.LogEntryType.Treatment => "bg-danger",
+        _                                                  => "bg-secondary"
+    };
+}

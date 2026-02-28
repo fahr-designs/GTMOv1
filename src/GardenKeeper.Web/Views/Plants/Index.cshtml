@@ -1,0 +1,113 @@
+@model GardenKeeper.Application.ViewModels.PlantSearchViewModel
+@{
+    ViewData["Title"] = "Plant Database";
+}
+
+<h1 class="mb-3">Plant Database</h1>
+<p class="text-muted">Kansas &amp; Midwest — USDA Zones 5b through 7a</p>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Common or scientific name..." />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Plant Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">All Types</option>
+                        @foreach (var t in Enum.GetValues<GardenKeeper.Domain.Enums.PlantType>())
+                        {
+                            <option value="@t" selected="@(Model.PlantType == t ? "selected" : null)">@t</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Hardiness Zone</label>
+                    <select name="zone" class="form-select">
+                        <option value="">All Zones</option>
+                        @foreach (var z in new[] { "5b", "6a", "6b", "7a" })
+                        {
+                            <option value="@z" selected="@(Model.HardinessZone == z ? "selected" : null)">Zone @z</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Sun</label>
+                    <select name="sun" class="form-select">
+                        <option value="">Any Sun</option>
+                        @foreach (var s in Enum.GetValues<GardenKeeper.Domain.Enums.SunRequirement>())
+                        {
+                            <option value="@s" selected="@(Model.SunRequirement == s ? "selected" : null)">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-success flex-fill">Search</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<p class="text-muted">@Model.Results.Count() plant(s) found</p>
+
+@if (Model.Results.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover table-sm">
+            <thead class="table-success">
+                <tr>
+                    <th>Common Name</th>
+                    <th>Scientific Name</th>
+                    <th>Type</th>
+                    <th>Zones</th>
+                    <th>Days to Maturity</th>
+                    <th>Spacing</th>
+                    <th>Sun</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var plant in Model.Results)
+                {
+                    <tr>
+                        <td><strong>@plant.CommonName</strong></td>
+                        <td><em>@plant.ScientificName</em></td>
+                        <td>
+                            <span class="badge @GetPlantTypeBadge(plant.PlantType)">@plant.PlantType</span>
+                        </td>
+                        <td>@plant.HardinessZones</td>
+                        <td>@(plant.DaysToMaturity > 300 ? "Perennial" : plant.DaysToMaturity + " days")</td>
+                        <td>@plant.SpacingInches&quot;</td>
+                        <td>@plant.SunRequirement</td>
+                        <td>
+                            <a asp-action="Detail" asp-route-id="@plant.Id" class="btn btn-sm btn-outline-success">View</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <p class="text-muted">No plants match your search. Try different filters.</p>
+    </div>
+}
+
+@functions {
+    string GetPlantTypeBadge(GardenKeeper.Domain.Enums.PlantType type) => type switch
+    {
+        GardenKeeper.Domain.Enums.PlantType.Vegetable   => "bg-success",
+        GardenKeeper.Domain.Enums.PlantType.Fruit       => "bg-warning text-dark",
+        GardenKeeper.Domain.Enums.PlantType.Flower      => "bg-pink text-dark",
+        GardenKeeper.Domain.Enums.PlantType.Herb        => "bg-info text-dark",
+        GardenKeeper.Domain.Enums.PlantType.NativePlant => "bg-secondary",
+        _                                               => "bg-light text-dark"
+    };
+}

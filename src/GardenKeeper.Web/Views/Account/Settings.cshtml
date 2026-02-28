@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Account Settings";
+    var currentZone = ViewBag.CurrentZone as string;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4">Account Settings</h1>
+
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Garden Zone</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Select your USDA Plant Hardiness Zone. Kansas spans zones 5b (northwest) through 7a (southeast).
+                    This helps filter plant recommendations for your area.
+                </p>
+
+                <form asp-action="Settings" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="hardinessZone" class="form-label">USDA Hardiness Zone</label>
+                        <select name="hardinessZone" id="hardinessZone" class="form-select">
+                            <option value="">-- Not Set --</option>
+                            <option value="5b" selected="@(currentZone == "5b" ? "selected" : null)">Zone 5b — Northwestern Kansas (min -15°F)</option>
+                            <option value="6a" selected="@(currentZone == "6a" ? "selected" : null)">Zone 6a — North-Central Kansas (min -10°F)</option>
+                            <option value="6b" selected="@(currentZone == "6b" ? "selected" : null)">Zone 6b — Central Kansas / Wichita (min -5°F)</option>
+                            <option value="7a" selected="@(currentZone == "7a" ? "selected" : null)">Zone 7a — Southeastern Kansas (min 0°F)</option>
+                        </select>
+                        <div class="form-text">Used to filter plant database recommendations.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Save Settings</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">Kansas Zone Map</div>
+            <div class="card-body">
+                <div class="table-sm">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr><th>Zone</th><th>Region</th><th>Cities</th><th>Min Temp</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>5b</td><td>Northwest KS</td><td>Colby, Goodland</td><td>-15°F</td></tr>
+                            <tr><td>6a</td><td>North-Central KS</td><td>Salina, Manhattan, Topeka</td><td>-10°F</td></tr>
+                            <tr><td>6b</td><td>Central/South KS</td><td>Wichita, Hutchinson, Dodge City</td><td>-5°F</td></tr>
+                            <tr><td>7a</td><td>Southeast KS</td><td>Pittsburg, Parsons, Independence</td><td>0°F</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

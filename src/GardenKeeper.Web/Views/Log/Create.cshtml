@@ -1,0 +1,103 @@
+@model GardenKeeper.Application.ViewModels.LogEntryCreateViewModel
+@{
+    ViewData["Title"] = "Add Log Entry";
+    var beds = ViewBag.Beds as IEnumerable<GardenKeeper.Domain.Entities.GardenBed> ?? [];
+    var plants = ViewBag.Plants as IEnumerable<GardenKeeper.Domain.Entities.Plant> ?? [];
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Log</a></li>
+        <li class="breadcrumb-item active">Add Entry</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">New Log Entry</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="BedId" class="form-label"></label>
+                        <select asp-for="BedId" class="form-select">
+                            <option value="0">-- Select Bed --</option>
+                            @foreach (var bed in beds)
+                            {
+                                <option value="@bed.Id" selected="@(Model.BedId == bed.Id ? "selected" : null)">
+                                    @bed.Name (@bed.WidthFeet × @bed.LengthFeet ft)
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="BedId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PlantId" class="form-label"></label>
+                        <select asp-for="PlantId" class="form-select">
+                            <option value="">-- No specific plant --</option>
+                            @foreach (var plant in plants.OrderBy(p => p.CommonName))
+                            {
+                                <option value="@plant.Id" selected="@(Model.PlantId == plant.Id ? "selected" : null)">
+                                    @plant.CommonName (@plant.PlantType)
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EntryDate" class="form-label"></label>
+                            <input asp-for="EntryDate" class="form-control" type="date" />
+                            <span asp-validation-for="EntryDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EntryType" class="form-label"></label>
+                            <select asp-for="EntryType" class="form-select">
+                                @foreach (var t in Enum.GetValues<GardenKeeper.Domain.Enums.LogEntryType>())
+                                {
+                                    <option value="@t">@t</option>
+                                }
+                            </select>
+                            <span asp-validation-for="EntryType" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="StartMethod" class="form-label"></label>
+                            <select asp-for="StartMethod" class="form-select">
+                                <option value="">-- Not applicable --</option>
+                                @foreach (var m in Enum.GetValues<GardenKeeper.Domain.Enums.StartMethod>())
+                                {
+                                    <option value="@m">@m</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ExpectedHarvestDate" class="form-label"></label>
+                            <input asp-for="ExpectedHarvestDate" class="form-control" type="date" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="4"
+                                  placeholder="Describe what you observed, planted, or did..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success flex-fill">Save Entry</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
