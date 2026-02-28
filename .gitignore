@@ -1,0 +1,28 @@
+## .NET build outputs
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## SQLite database (dev)
+*.db
+*.db-shm
+*.db-wal
+
+## Rider / VS / VSCode
+.idea/
+.vscode/
+*.DotSettings.user
+
+## OS
+.DS_Store
+Thumbs.db
+
+## NuGet
+*.nupkg
+.nuget/
+
+## Publish output
+publish/
+out/

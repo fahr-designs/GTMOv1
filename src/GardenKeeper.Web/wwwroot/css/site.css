@@ -1,0 +1,99 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+/* ── Garden Grid ────────────────────────────────────────────────────── */
+.garden-grid {
+  display: grid;
+  gap: 2px;
+  background: #c8e6c9;
+  padding: 4px;
+  border-radius: 6px;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.garden-cell {
+  width: 48px;
+  height: 48px;
+  background: #f1f8e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.1;
+  overflow: hidden;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+}
+
+.garden-cell:hover {
+  border-color: #388e3c;
+  background: #dcedc8;
+}
+
+.garden-cell.has-plant {
+  border-width: 2px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.garden-cell.highlighted {
+  outline: 3px solid #ff9800;
+  outline-offset: -2px;
+}
+
+/* Plant type color legend */
+.plant-item:hover { background: #f0fff0; }
+.plant-item.selected { background: #d4edda; font-weight: 600; }
+
+/* Border dashed for empty state cards */
+.border-dashed {
+  border: 2px dashed #ced4da !important;
+}
+
+/* Compact tables */
+.table-sm td, .table-sm th { padding: 0.3rem 0.5rem; }
+
+/* Pink badge not in Bootstrap by default */
+.bg-pink { background-color: #e91e8c !important; }
+
+/* Sticky sidebar scroll */
+@media (max-width: 768px) {
+  .sticky-top { position: static; }
+  .garden-cell { width: 36px; height: 36px; font-size: 8px; }
+}

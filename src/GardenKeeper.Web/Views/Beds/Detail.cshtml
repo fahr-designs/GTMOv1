@@ -1,0 +1,172 @@
+@model GardenKeeper.Application.ViewModels.GardenBedDetailViewModel
+@{
+    ViewData["Title"] = Model.Bed.Name;
+    var allPlants = ViewBag.AllPlants as IEnumerable<GardenKeeper.Domain.Entities.Plant> ?? [];
+    var placementsJson = System.Text.Json.JsonSerializer.Serialize(
+        Model.PlantPlacements.Select(p => new {
+            id = p.Id, plantId = p.PlantId, gridX = p.GridX, gridY = p.GridY,
+            name = p.Plant?.CommonName ?? "", type = p.Plant?.PlantType.ToString() ?? ""
+        })
+    );
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">My Beds</a></li>
+        <li class="breadcrumb-item active">@Model.Bed.Name</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="mb-0">@Model.Bed.Name</h1>
+        <p class="text-muted">@Model.Bed.WidthFeet ft &times; @Model.Bed.LengthFeet ft &mdash; Season @Model.Bed.Season</p>
+    </div>
+    <a asp-controller="Log" asp-action="Create" asp-route-bedId="@Model.Bed.Id" class="btn btn-outline-success">
+        + Add Log Entry
+    </a>
+</div>
+
+<div class="row">
+    <!-- Plant Palette Sidebar -->
+    <div class="col-md-3">
+        <div class="card mb-3 sticky-top" style="top: 1rem;">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">Plant Palette</h6>
+            </div>
+            <div class="card-body p-2">
+                <!-- Mode Selector -->
+                <div class="btn-group w-100 mb-2" role="group">
+                    <button type="button" class="btn btn-sm btn-success active" id="btn-freeform" onclick="setMode('freeform')">
+                        Freeform
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" id="btn-guided" onclick="setMode('guided')">
+                        Guided
+                    </button>
+                </div>
+
+                <!-- Guided Options -->
+                <div id="guided-options" class="d-none mb-2">
+                    <select id="guided-goal" class="form-select form-select-sm mb-1">
+                        <option value="pollinator">Pollinator Garden</option>
+                        <option value="wildlife">Wildlife Garden</option>
+                    </select>
+                    <button class="btn btn-sm btn-success w-100" onclick="applyGuidedLayout()">Apply Layout</button>
+                    <hr />
+                </div>
+
+                <!-- Plant search -->
+                <input type="text" id="plant-search" class="form-control form-control-sm mb-2" placeholder="Search plants..." />
+                <div id="plant-list" style="max-height: 400px; overflow-y: auto;">
+                    @foreach (var plant in allPlants)
+                    {
+                        <div class="plant-item d-flex align-items-center gap-2 p-1 rounded mb-1"
+                             data-plant-id="@plant.Id"
+                             data-plant-name="@plant.CommonName"
+                             data-plant-type="@plant.PlantType"
+                             data-spacing="@plant.SpacingInches"
+                             onclick="selectPlant(this)"
+                             style="cursor:pointer;">
+                            <span class="plant-color-dot" style="width:12px;height:12px;border-radius:50%;background:@GetPlantColor(plant.PlantType);flex-shrink:0;"></span>
+                            <span class="small">@plant.CommonName</span>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card-footer p-2">
+                <div id="selected-plant-info" class="small text-muted">Click a plant to select it, then click a grid cell to place it.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Garden Grid -->
+    <div class="col-md-9">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Garden Grid (1 cell = 1 sq ft)</h6>
+                <small class="text-muted">Right-click a placed plant to remove it</small>
+            </div>
+            <div class="card-body p-3">
+                <div id="garden-grid"
+                     class="garden-grid"
+                     data-bed-id="@Model.Bed.Id"
+                     data-width="@Model.Bed.WidthFeet"
+                     data-length="@Model.Bed.LengthFeet"
+                     data-placements="@placementsJson">
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Entries -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Log Entries</h6>
+                <a asp-controller="Log" asp-action="Create" asp-route-bedId="@Model.Bed.Id"
+                   class="btn btn-sm btn-outline-success">+ Add Entry</a>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.LogEntries.Any())
+                {
+                    <p class="text-muted p-3 mb-0">No log entries yet for this bed.</p>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var entry in Model.LogEntries)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <span class="badge @GetEntryBadge(entry.EntryType) me-1">@entry.EntryType</span>
+                                        @if (entry.Plant != null)
+                                        {
+                                            <strong>@entry.Plant.CommonName</strong>
+                                        }
+                                        @if (entry.StartMethod.HasValue)
+                                        {
+                                            <small class="text-muted ms-1">via @entry.StartMethod</small>
+                                        }
+                                    </div>
+                                    <small class="text-muted">@entry.EntryDate.ToString("MMM d, yyyy")</small>
+                                </div>
+                                @if (!string.IsNullOrEmpty(entry.Notes))
+                                {
+                                    <p class="mb-1 mt-1 small">@entry.Notes</p>
+                                }
+                                @if (entry.ExpectedHarvestDate.HasValue)
+                                {
+                                    <small class="text-success">Expected harvest: @entry.ExpectedHarvestDate.Value.ToString("MMM d, yyyy")</small>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetPlantColor(GardenKeeper.Domain.Enums.PlantType type) => type switch
+    {
+        GardenKeeper.Domain.Enums.PlantType.Vegetable   => "#28a745",
+        GardenKeeper.Domain.Enums.PlantType.Fruit       => "#fd7e14",
+        GardenKeeper.Domain.Enums.PlantType.Flower      => "#e91e8c",
+        GardenKeeper.Domain.Enums.PlantType.Herb        => "#20c997",
+        GardenKeeper.Domain.Enums.PlantType.NativePlant => "#6f42c1",
+        _                                               => "#6c757d"
+    };
+
+    string GetEntryBadge(GardenKeeper.Domain.Enums.LogEntryType type) => type switch
+    {
+        GardenKeeper.Domain.Enums.LogEntryType.Planting  => "bg-success",
+        GardenKeeper.Domain.Enums.LogEntryType.Harvest   => "bg-warning text-dark",
+        GardenKeeper.Domain.Enums.LogEntryType.Watering  => "bg-info text-dark",
+        GardenKeeper.Domain.Enums.LogEntryType.Treatment => "bg-danger",
+        _                                               => "bg-secondary"
+    };
+}
+
+@section Scripts {
+    <script src="~/js/garden-grid.js"></script>
+}

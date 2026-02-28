@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GardenKeeper.Application/GardenKeeper.Application.csproj" />
+    <Project Path="src/GardenKeeper.Domain/GardenKeeper.Domain.csproj" />
+    <Project Path="src/GardenKeeper.Infrastructure/GardenKeeper.Infrastructure.csproj" />
+    <Project Path="src/GardenKeeper.Web/GardenKeeper.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GardenKeeper.Tests/GardenKeeper.Tests.csproj" />
+  </Folder>
+</Solution>

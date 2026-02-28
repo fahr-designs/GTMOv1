@@ -1,0 +1,55 @@
+@model GardenKeeper.Application.ViewModels.GardenBedListViewModel
+@{
+    ViewData["Title"] = "My Garden Beds";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Garden Beds</h1>
+    <a asp-action="Create" class="btn btn-success">+ New Bed</a>
+</div>
+
+@if (!Model.Beds.Any())
+{
+    <div class="text-center py-5">
+        <h4 class="text-muted">No garden beds yet</h4>
+        <p class="text-muted">Create your first garden bed to start planning!</p>
+        <a asp-action="Create" class="btn btn-success btn-lg">Create Garden Bed</a>
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var bed in Model.Beds)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">@bed.Name</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            <strong>Size:</strong> @bed.WidthFeet ft &times; @bed.LengthFeet ft
+                            (@(bed.WidthFeet * bed.LengthFeet) sq ft)
+                        </p>
+                        <p class="card-text">
+                            <strong>Season:</strong> @bed.Season
+                        </p>
+                        <p class="card-text">
+                            <span class="badge bg-success">@bed.PlantPlacements.Count plant(s) placed</span>
+                        </p>
+                    </div>
+                    <div class="card-footer d-flex gap-2">
+                        <a asp-action="Detail" asp-route-id="@bed.Id" class="btn btn-success flex-fill">
+                            Open Planner
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@bed.Id" method="post"
+                              onsubmit="return confirm('Delete @bed.Name? This cannot be undone.');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

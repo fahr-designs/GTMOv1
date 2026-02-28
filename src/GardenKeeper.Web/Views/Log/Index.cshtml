@@ -1,0 +1,86 @@
+@model GardenKeeper.Application.ViewModels.LogHistoryViewModel
+@{
+    ViewData["Title"] = "Log History";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Garden Log</h1>
+    <a asp-action="Create" class="btn btn-success">+ Add Entry</a>
+</div>
+
+@if (!Model.Entries.Any())
+{
+    <div class="text-center py-5">
+        <h4 class="text-muted">No log entries yet</h4>
+        <p class="text-muted">Start tracking your garden activities!</p>
+        <a asp-action="Create" class="btn btn-success btn-lg">Add First Entry</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-success">
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Bed</th>
+                    <th>Plant</th>
+                    <th>Notes</th>
+                    <th>Harvest Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Entries)
+                {
+                    <tr>
+                        <td>@item.Entry.EntryDate.ToString("MMM d, yyyy")</td>
+                        <td>
+                            <span class="badge @GetBadge(item.Entry.EntryType)">@item.Entry.EntryType</span>
+                        </td>
+                        <td>
+                            <a asp-controller="Beds" asp-action="Detail" asp-route-id="@item.Entry.GardenBedId">
+                                @item.BedName
+                            </a>
+                        </td>
+                        <td>
+                            @if (item.PlantName != null)
+                            {
+                                <a asp-controller="Plants" asp-action="Detail" asp-route-id="@item.Entry.PlantId">
+                                    @item.PlantName
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-truncate" style="max-width: 250px;">@item.Entry.Notes</td>
+                        <td>
+                            @(item.Entry.ExpectedHarvestDate?.ToString("MMM d, yyyy") ?? "—")
+                        </td>
+                        <td>
+                            <form asp-action="Delete" asp-route-id="@item.Entry.Id" method="post"
+                                  onsubmit="return confirm('Delete this log entry?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@functions {
+    string GetBadge(GardenKeeper.Domain.Enums.LogEntryType type) => type switch
+    {
+        GardenKeeper.Domain.Enums.LogEntryType.Planting  => "bg-success",
+        GardenKeeper.Domain.Enums.LogEntryType.Harvest   => "bg-warning text-dark",
+        GardenKeeper.Domain.Enums.LogEntryType.Watering  => "bg-info text-dark",
+        GardenKeeper.Domain.Enums.LogEntryType.Treatment => "bg-danger",
+        _                                                => "bg-secondary"
+    };
+}
